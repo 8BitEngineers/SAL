@@ -1,0 +1,86 @@
+import RPi.GPIO as GPIO
+from time import sleep
+from approxeng.input.selectbinder import ControllerResource
+in1 = 24
+in2 = 23
+en = 25
+
+l1= 27
+l2= 17
+rn = 22
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(in1,GPIO.OUT)
+GPIO.setup(in2,GPIO.OUT)
+GPIO.setup(en,GPIO.OUT)
+p=GPIO.PWM(en,1000)
+p.start(0)
+
+GPIO.setup(l1,GPIO.OUT)
+GPIO.setup(l2,GPIO.OUT)
+GPIO.setup(rn,GPIO.OUT)
+g=GPIO.PWM(rn,1000)
+g.start(0)
+
+# Get a joystick
+with ControllerResource() as joystick:
+
+    # Loop until we're disconnected
+    while joystick.connected:
+
+    
+        circle_held = joystick.circle
+        triangle_held = joystick.triangle
+        square_held = joystick.square 
+        # This is an instance of approxeng.input.ButtonPresses
+        presses = joystick.check_presses()
+
+        # We can also use attributes directly, and get at the presses object from the controller:
+        while circle_held is not None:
+            p.ChangeDutyCycle(75)
+            g.ChangeDutyCycle(75)
+            GPIO.output(l1,GPIO.LOW)
+            GPIO.output(l2,GPIO.HIGH)
+            GPIO.output(in1,GPIO.LOW)
+            GPIO.output(in2,GPIO.HIGH)
+            print('Right Wheel')
+            circle_held = joystick.circle
+
+           # sleep(0.1)
+        # Or we can use the 'x in y' syntax:
+        while square_held is not None:
+            p.ChangeDutyCycle(75) 
+            g.ChangeDutyCycle(75)
+            GPIO.output(in2,GPIO.LOW)
+            GPIO.output(in1,GPIO.HIGH)
+            GPIO.output(l2,GPIO.LOW)
+            GPIO.output(l1,GPIO.HIGH)
+
+            print('Left Wheel')
+            square_held = joystick.square
+        while triangle_held is not None:
+            p.ChangeDutyCycle(75) 
+            g.ChangeDutyCycle(75)
+            GPIO.output(in1,GPIO.LOW)
+            GPIO.output(in2,GPIO.HIGH)
+            GPIO.output(l2,GPIO.LOW)
+            GPIO.output(l1,GPIO.HIGH)
+
+            print('Forward')
+            cross_held = joystick.cross
+        while square_held is not None:
+            p.ChangeDutyCycle(75) 
+            g.ChangeDutyCycle(75)
+            GPIO.output(in2,GPIO.LOW)
+            GPIO.output(in1,GPIO.HIGH)
+            GPIO.output(l2,GPIO.LOW)
+            GPIO.output(l1,GPIO.HIGH)
+
+            print('Left Wheel')
+            square_held = joystick.square
+
+        # If we had any presses, print the list of pressed buttons by standard name
+        if joystick.has_presses:
+            print(joystick.presses)
+        p.ChangeDutyCycle(0)
+        g.ChangeDutyCycle(0)
+
